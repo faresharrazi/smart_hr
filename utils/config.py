@@ -5,14 +5,12 @@ Application configuration and settings management.
 """
 
 import os
-from dotenv import load_dotenv
 
 
 class Config:
     """Application configuration"""
     
     def __init__(self):
-        load_dotenv()
         self.mistral_api_key = os.getenv("MISTRAL_API_KEY")
     
     def validate_api_keys(self, provider: str) -> bool:
@@ -21,4 +19,4 @@ class Config:
     
     def get_missing_api_key_message(self, provider: str) -> str:
         """Get error message for missing Mistral API key"""
-        return "MISTRAL_API_KEY not found. Please add it to your .env file." 
+        return "MISTRAL_API_KEY not found. Please add it to your environment variables." 
