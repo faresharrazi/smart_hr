@@ -7,6 +7,9 @@ Handles text extraction from PDFs using the Mistral OCR API via direct HTTP requ
 import base64
 import os
 import sys
+import json
+import urllib.request
+import urllib.parse
 from typing import Optional
 
 # Debug imports
@@ -14,16 +17,7 @@ print("Starting PDF extractor imports...")
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
 
-# Try to import requests with better error handling
-try:
-    import requests
-    print("✓ requests imported successfully")
-except ImportError as e:
-    print(f"✗ Error importing requests: {e}")
-    print(f"Available modules: {[m for m in sys.modules.keys() if 'request' in m.lower()]}")
-    raise ImportError(f"requests module not found. Please ensure it's installed: pip install requests. Error: {e}")
-
-print("✓ All imports successful")
+print("✓ All imports successful (using urllib)")
 
 class PDFExtractor:
     """Extract text from PDF files using Mistral OCR API via direct HTTP requests."""
@@ -39,7 +33,7 @@ class PDFExtractor:
         pdf_bytes = pdf_file.read()
         base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
         
-        # Call Mistral OCR API directly via HTTP
+        # Call Mistral OCR API directly via HTTP using urllib
         url = "https://api.mistral.ai/v1/ocr"
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -54,10 +48,15 @@ class PDFExtractor:
             "include_image_base64": True
         }
         
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
+        # Prepare the request
+        json_data = json.dumps(data).encode('utf-8')
+        req = urllib.request.Request(url, data=json_data, headers=headers, method='POST')
+        
+        # Make the request
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read()
+            ocr_response = json.loads(response_data.decode('utf-8'))
         
         # Parse response and extract text
-        ocr_response = response.json()
         all_text = "\n\n".join(page["markdown"] for page in ocr_response["pages"])
         return all_text if all_text.strip() else None 
