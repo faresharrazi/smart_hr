@@ -3,5 +3,5 @@ langchain==0.1.13
 langchain-mistralai==0.0.3
 PyPDF2==3.0.1
 python-dotenv==1.0.0
-requests==2.32.4
+requests>=2.25.0
 plotly==5.18.0 
