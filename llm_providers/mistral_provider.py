@@ -5,10 +5,34 @@ Implementation for Mistral AI models.
 """
 
 import os
+import sys
 from typing import Dict, Any, Optional
-from langchain_mistralai import ChatMistralAI
-from langchain.schema import HumanMessage
+
+# Debug imports
+print("Starting Mistral provider imports...")
+print(f"Python version: {sys.version}")
+print(f"Python path: {sys.path[:3]}...")
+
+# Try to import langchain_mistralai with better error handling
+try:
+    from langchain_mistralai import ChatMistralAI
+    print("✓ langchain_mistralai imported successfully")
+except ImportError as e:
+    print(f"✗ Error importing langchain_mistralai: {e}")
+    print(f"Available modules: {[m for m in sys.modules.keys() if 'langchain' in m.lower() or 'mistral' in m.lower()]}")
+    raise ImportError(f"langchain_mistralai module not found. Please ensure it's installed: pip install langchain-mistralai. Error: {e}")
+
+# Try to import langchain schema
+try:
+    from langchain.schema import HumanMessage
+    print("✓ langchain.schema imported successfully")
+except ImportError as e:
+    print(f"✗ Error importing langchain.schema: {e}")
+    raise ImportError(f"langchain.schema module not found. Please ensure langchain is installed: pip install langchain. Error: {e}")
+
 from .base_provider import BaseLLMProvider
+
+print("✓ All Mistral provider imports successful")
 
 
 class MistralProvider(BaseLLMProvider):
