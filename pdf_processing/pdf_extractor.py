@@ -6,12 +6,21 @@ Handles text extraction from PDFs using the Mistral OCR API via direct HTTP requ
 
 import base64
 import os
-import requests
+import sys
 from dotenv import load_dotenv
 from typing import Optional
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Try to import requests with better error handling
+try:
+    import requests
+except ImportError as e:
+    print(f"Error importing requests: {e}")
+    print(f"Python path: {sys.path}")
+    print(f"Available modules: {[m for m in sys.modules.keys() if 'request' in m.lower()]}")
+    raise ImportError(f"requests module not found. Please ensure it's installed: pip install requests. Error: {e}")
 
 class PDFExtractor:
     """Extract text from PDF files using Mistral OCR API via direct HTTP requests."""
