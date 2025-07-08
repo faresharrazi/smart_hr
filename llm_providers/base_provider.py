@@ -5,8 +5,7 @@ Defines the interface that all LLM providers must implement.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
-from langchain.schema import HumanMessage
+from typing import Dict, Any, Optional, Union
 
 
 class BaseLLMProvider(ABC):
@@ -59,7 +58,7 @@ Please analyze the compatibility focusing on: {metrics_text}
 """
         return prompt
     
-    def parse_response(self, response_content: str) -> dict | None:
+    def parse_response(self, response_content: str) -> Union[dict, None]:
         """Parse the LLM response into structured format. Returns None if parsing fails."""
         import json
         import re
