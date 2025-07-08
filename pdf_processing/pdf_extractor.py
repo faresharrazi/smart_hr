@@ -14,15 +14,6 @@ print("Starting PDF extractor imports...")
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
 
-# Try to import dotenv with better error handling
-try:
-    from dotenv import load_dotenv
-    print("✓ dotenv imported successfully")
-except ImportError as e:
-    print(f"✗ Error importing dotenv: {e}")
-    print(f"Available modules: {[m for m in sys.modules.keys() if 'dotenv' in m.lower() or 'env' in m.lower()]}")
-    raise ImportError(f"python-dotenv module not found. Please ensure it's installed: pip install python-dotenv. Error: {e}")
-
 # Try to import requests with better error handling
 try:
     import requests
@@ -32,9 +23,7 @@ except ImportError as e:
     print(f"Available modules: {[m for m in sys.modules.keys() if 'request' in m.lower()]}")
     raise ImportError(f"requests module not found. Please ensure it's installed: pip install requests. Error: {e}")
 
-# Load environment variables from .env file
-load_dotenv()
-print("✓ Environment variables loaded")
+print("✓ All imports successful")
 
 class PDFExtractor:
     """Extract text from PDF files using Mistral OCR API via direct HTTP requests."""
