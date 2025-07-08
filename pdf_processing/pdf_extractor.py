@@ -1,67 +1,51 @@
 """
-PDF Extractor
+PDF Extractor (Mistral OCR only)
 
-Handles text extraction from both text-based and image-based PDFs.
+Handles text extraction from PDFs using the Mistral OCR API via direct HTTP requests.
 """
 
-import PyPDF2
-import fitz  # PyMuPDF
-import pytesseract
-from pdf2image import convert_from_bytes
+import base64
+import os
+import requests
+from dotenv import load_dotenv
 from typing import Optional
-import sys
 
+# Load environment variables from .env file
+load_dotenv()
 
 class PDFExtractor:
-    """Extract text from PDF files with fallback methods"""
-    
+    """Extract text from PDF files using Mistral OCR API via direct HTTP requests."""
     @staticmethod
     def extract_text_from_pdf(pdf_file) -> Optional[str]:
-        """Extract text from uploaded PDF file, fallback to PyMuPDF, then OCR if needed."""
+        """Extract text from a PDF file using Mistral OCR API."""
+        api_key = os.environ.get("MISTRAL_API_KEY")
+        if not api_key:
+            raise RuntimeError("MISTRAL_API_KEY not set in environment.")
         
-        # Try PyPDF2 first
-        try:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            text = ""
-            for page in pdf_reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text
-            if text.strip():
-                return text
-            else:
-                print("PyPDF2 could not extract text, trying PyMuPDF fallback...", file=sys.stderr)
-        except Exception as e:
-            print(f"PyPDF2 error: {str(e)}. Trying PyMuPDF fallback...", file=sys.stderr)
+        # Read and encode PDF to base64
+        pdf_file.seek(0)
+        pdf_bytes = pdf_file.read()
+        base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
         
-        # Fallback: PyMuPDF
-        try:
-            pdf_file.seek(0)
-            doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-            text = ""
-            for page in doc:
-                text += page.get_text()
-            if text.strip():
-                return text
-            else:
-                print("PyMuPDF could not extract text, trying OCR fallback...", file=sys.stderr)
-        except Exception as e:
-            print(f"PyMuPDF error: {str(e)}. Trying OCR fallback...", file=sys.stderr)
+        # Call Mistral OCR API directly via HTTP
+        url = "https://api.mistral.ai/v1/ocr"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "mistral-ocr-latest",
+            "document": {
+                "type": "document_url",
+                "document_url": f"data:application/pdf;base64,{base64_pdf}"
+            },
+            "include_image_base64": True
+        }
         
-        # Fallback: OCR
-        try:
-            pdf_file.seek(0)
-            images = convert_from_bytes(pdf_file.read())
-            text = ""
-            for i, image in enumerate(images):
-                ocr_text = pytesseract.image_to_string(image)
-                text += ocr_text
-            if text.strip():
-                print("Text extracted using OCR. Results may be less accurate for low-quality scans.", file=sys.stderr)
-                return text
-            else:
-                print("OCR could not extract text. The PDF may be blank or corrupted.", file=sys.stderr)
-                return None
-        except Exception as e:
-            print(f"OCR error: {str(e)}. Make sure Tesseract is installed on your system.", file=sys.stderr)
-            return None 
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        
+        # Parse response and extract text
+        ocr_response = response.json()
+        all_text = "\n\n".join(page["markdown"] for page in ocr_response["pages"])
+        return all_text if all_text.strip() else None 
