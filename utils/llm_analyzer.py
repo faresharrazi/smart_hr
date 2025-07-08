@@ -5,8 +5,8 @@ Handles prompt construction, LLM call, and robust JSON parsing for candidate ana
 """
 import json
 import re
-from langchain_mistralai import ChatMistralAI
-from langchain.schema import HumanMessage
+import os
+import urllib.request
 
 def analyze_candidate(job_description: str, structured_cv: str) -> dict:
     """Analyze candidate using Mistral (small) and return parsed JSON result."""
@@ -56,14 +56,39 @@ Return ONLY a valid JSON object with these exact fields:
 
 IMPORTANT: Respond ONLY with the JSON object. No extra text, no markdown, no code blocks.
 """
-    llm = ChatMistralAI(
-        model="mistral-small-latest",
-        temperature=0.2,
-        max_tokens=1500
-    )
-    messages = [HumanMessage(content=prompt)]
-    response = llm.invoke(messages)
-    raw = response.content
+    
+    # Get API key from environment
+    api_key = os.getenv("MISTRAL_API_KEY")
+    if not api_key:
+        raise RuntimeError("MISTRAL_API_KEY not set in environment.")
+    
+    # Prepare the request
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "max_tokens": 1500
+    }
+    
+    # Make HTTP request to Mistral API
+    json_data = json.dumps(data).encode('utf-8')
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    req = urllib.request.Request("https://api.mistral.ai/v1/chat/completions", data=json_data, headers=headers, method='POST')
+    
+    with urllib.request.urlopen(req) as response:
+        response_data = response.read()
+        api_response = json.loads(response_data.decode('utf-8'))
+    
+    # Extract the response content
+    if 'choices' in api_response and len(api_response['choices']) > 0:
+        raw = api_response['choices'][0]['message']['content']
+    else:
+        raise ValueError(f"Unexpected API response format: {api_response}")
+    
     # Try to parse JSON
     try:
         result = json.loads(raw)
