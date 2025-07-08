@@ -4,8 +4,7 @@ import json
 from pdf_processing.pdf_extractor import PDFExtractor
 from utils.cv_structurer import structure_cv_text
 from utils.llm_analyzer import analyze_candidate
-from dotenv import load_dotenv
-load_dotenv()
+
 
 def main():
     if len(sys.argv) != 3:

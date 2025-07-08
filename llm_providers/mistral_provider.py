@@ -10,15 +10,7 @@ import json
 import urllib.request
 from typing import Dict, Any, Optional
 
-# Debug imports
-print("Starting Mistral provider imports...")
-print(f"Python version: {sys.version}")
-print(f"Python path: {sys.path[:3]}...")
-
-print("✓ All Mistral provider imports successful (using urllib)")
-
 from .base_provider import BaseLLMProvider
-
 
 class MistralProvider(BaseLLMProvider):
     """Mistral AI provider implementation using direct HTTP API calls"""
@@ -32,13 +24,9 @@ class MistralProvider(BaseLLMProvider):
         """Initialize the Mistral LLM model"""
         try:
             if not self.api_key:
-                print("MISTRAL_API_KEY not found in environment")
                 return False
-            
-            print(f"✓ Mistral provider initialized with model: {self.model_name}")
             return True
         except Exception as e:
-            print(f"Error initializing Mistral model: {str(e)}")
             return False
     
     def analyze_compatibility(self, job_description: str, cv_text: str, selected_metrics: list) -> Optional[Dict[str, Any]]:
@@ -76,7 +64,6 @@ class MistralProvider(BaseLLMProvider):
                 self.last_raw_response = response_content
                 return self.parse_response(response_content)
             else:
-                print(f"Unexpected API response format: {api_response}")
                 return None
             
         except Exception as e:

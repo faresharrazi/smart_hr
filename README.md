@@ -17,7 +17,7 @@ A minimal web app to analyze the fit between a candidate's CV (PDF) and a job de
 ## Technical Stack
 
 - **Frontend**: Streamlit
-- **LLM**: Mistral AI (via LangChain)
+- **LLM**: Mistral AI (direct HTTP API)
 - **OCR**: Mistral OCR API for PDF text extraction
 - **Backend**: Python with modular architecture
 - **Deployment**: Streamlit Cloud
@@ -33,10 +33,11 @@ A minimal web app to analyze the fit between a candidate's CV (PDF) and a job de
   ```bash
   pip install -r requirements.txt
   ```
-- Set your MISTRAL API key in a `.env` file:
-  ```env
-  MISTRAL_API_KEY=your-key-here
+- Set your MISTRAL API key as an environment variable:
+  ```bash
+  export MISTRAL_API_KEY=your-key-here
   ```
+  (Or set it in your Streamlit Cloud secrets)
 
 ## Run
 
@@ -54,6 +55,6 @@ streamlit run app.py
 ## How It Works
 
 1. **PDF Processing**: The app uses Mistral's OCR API to extract text from uploaded PDFs, ensuring compatibility with both text-based and scanned documents
-2. **Analysis**: The extracted text is analyzed alongside the job description using Mistral LLM
+2. **Analysis**: The extracted text is analyzed alongside the job description using Mistral LLM via direct HTTP API
 3. **Scoring**: The system provides an overall fit score (0-100) with sub-metrics for skills match, experience, education, and soft skills
 4. **Results**: Clean, color-coded results display with detailed analysis and recommendations

@@ -12,13 +12,6 @@ import urllib.request
 import urllib.parse
 from typing import Optional
 
-# Debug imports
-print("Starting PDF extractor imports...")
-print(f"Python version: {sys.version}")
-print(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
-
-print("✓ All imports successful (using urllib)")
-
 class PDFExtractor:
     """Extract text from PDF files using Mistral OCR API via direct HTTP requests."""
     @staticmethod
